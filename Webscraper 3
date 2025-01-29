@@ -1,0 +1,20 @@
+import httpx
+from selectolax.parser import HTMLParser
+
+url = "https://www.imdb.com/list/ls050274118/"
+headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0) Gecko/20100101 Firefox/130.0"}
+
+resp = httpx.get(url, headers = headers)
+html = HTMLParser(resp.text)
+actor_name = html.css("div.sc-ada31d55-3.eFSukE a h3.ipc-title__text")
+qualification_sections = html.css("div.sc-ada31d55-6.uTkpb ul")
+def extract_text(node):
+    return node.text(strip=True) 
+for actor, qualifications_section in zip(actor_name, qualification_sections):
+    name = extract_text(actor)
+    qualifications = [extract_text(qual) for qual in qualifications_section.css("li")]
+    item = {
+        "name" : extract_text(actor),
+        "qualifications" : " | " .join(qualifications),
+    }
+    print(item)
